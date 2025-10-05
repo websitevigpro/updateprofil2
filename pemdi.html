@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>E-Vigpro/Pemdi/</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap');
+
+  :root {
+    --gradient: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
+    --bg-dark: #0f172a;
+    --card-bg: rgba(255,255,255,0.08);
+    --glass: rgba(255,255,255,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg-dark);
+    min-height: 100vh;
+    color: #f9fafb;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    overflow-x: hidden;
+    padding: 30px 10px;
+  }
+
+  h1 {
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.8rem;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 30px;
+    letter-spacing: 0.5px;
+  }
+
+  .app {
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 40px 30px;
+    width: 95%;
+    max-width: 450px;
+    box-shadow: 0 0 30px rgba(139,92,246,0.15);
+    animation: fadeIn 0.6s ease-out;
+  }
+
+  input {
+    width: 100%;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 15px;
+    color: #fff;
+    font-size: 1rem;
+    transition: 0.3s;
+  }
+
+  input:focus {
+    border-color: #818cf8;
+    outline: none;
+    background: rgba(255,255,255,0.1);
+  }
+
+  button {
+    width: 100%;
+    padding: 14px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    background: var(--gradient);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  button:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(139,92,246,0.4);
+  }
+
+  #loginMsg {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #f87171;
+    margin-top: 10px;
+  }
+
+  #voteArea {
+    display: none;
+    max-width: 900px;
+  }
+
+  .candidates {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 24px;
+    margin-top: 30px;
+  }
+
+  .card {
+    background: var(--glass);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    overflow: hidden;
+    text-align: center;
+    backdrop-filter: blur(20px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    padding-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 0 20px rgba(139,92,246,0.25);
+  }
+
+  .card img {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    max-height: 250px;
+  }
+
+  .card h3 {
+    margin-top: 12px;
+    font-size: 1.1rem;
+    color: #fff;
+  }
+
+  .card p {
+    font-size: 0.9rem;
+    color: #cbd5e1;
+    padding: 0 15px;
+    margin-top: 6px;
+    min-height: 50px;
+  }
+
+  .vote-btn {
+    background: linear-gradient(135deg, #10b981, #059669);
+    width: 80%;
+    margin-top: 10px;
+  }
+
+  footer {
+    margin-top: 40px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #94a3b8;
+  }
+
+  /* Loading Spinner */
+  #loading {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(15,23,42,0.85);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    flex-direction: column;
+    color: #fff;
+  }
+
+  .spinner {
+    border: 4px solid rgba(255,255,255,0.1);
+    border-top: 4px solid #8b5cf6;
+    border-radius: 50%;
+    width: 50px; height: 50px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+  }
+
+  /* Popup konfirmasi & sukses */
+  .popup {
+    position: fixed;
+    inset: 0;
+    background: rgba(15,23,42,0.8);
+    backdrop-filter: blur(10px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .popup-box {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 30px 25px;
+    border-radius: 16px;
+    text-align: center;
+    width: 90%;
+    max-width: 320px;
+    box-shadow: 0 0 25px rgba(99,102,241,0.3);
+  }
+
+  .popup-box h3 {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+  }
+
+  .popup-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+  }
+
+  .popup-buttons button {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+
+  .btn-cancel {
+    background: rgba(255,255,255,0.1);
+  }
+
+  .btn-yes {
+    background: linear-gradient(135deg, #10b981, #059669);
+  }
+
+  /* Popup sukses */
+  #popupSuccess .popup-box {
+    border: 1px solid rgba(16,185,129,0.3);
+    background: rgba(16,185,129,0.15);
+  }
+
+  .checkmark {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: inline-block;
+    border: 4px solid #10b981;
+    position: relative;
+    margin-bottom: 15px;
+  }
+
+  .checkmark::after {
+    content: '';
+    position: absolute;
+    left: 16px;
+    top: 10px;
+    width: 15px;
+    height: 30px;
+    border-right: 4px solid #10b981;
+    border-bottom: 4px solid #10b981;
+    transform: rotate(45deg) scale(0);
+    transform-origin: center;
+    animation: check 0.4s ease-out forwards 0.2s;
+  }
+
+  @keyframes check {
+    to { transform: rotate(45deg) scale(1); }
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+  <h1>Pemilihan Ketua Vigara Production</h1>
+
+  <div class="app" id="loginArea">
+    <input id="name" placeholder="Username" />
+    <input id="token" placeholder="Password" />
+    <button onclick="login()">Cari Data</button>
+    <p id="loginMsg"></p>
+  </div>
+
+  <div class="app" id="voteArea">
+    <h2 style="text-align:center; margin-bottom:20px;">Pilih Calon Ketua</h2>
+    <div class="candidates" id="candidates"></div>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading">
+    <div class="spinner"></div>
+    <p>Memuat...</p>
+  </div>
+
+  <!-- Popup konfirmasi -->
+  <div class="popup" id="popupConfirm">
+    <div class="popup-box">
+      <h3>Yakin ingin memilih calon ini?</h3>
+      <div class="popup-buttons">
+        <button class="btn-cancel" onclick="closePopup('popupConfirm')">Batal</button>
+        <button class="btn-yes" id="popupYes">Pilih</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Popup sukses -->
+  <div class="popup" id="popupSuccess">
+    <div class="popup-box">
+      <div class="checkmark"></div>
+      <h3>Vote berhasil!</h3>
+    </div>
+  </div>
+
+  <footer>© 2025 Vigara Production | Pemdi</footer>
+
+<script>
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwCgMDk3dQkwR31677a0aY1upEFMdCtL_PcdPlfMfRcr6XeRb9KMTEYTbjCbXF-rcSd/exec";
+let selectedCandidate = null;
+
+function showLoading(show = true) {
+  document.getElementById("loading").style.display = show ? "flex" : "none";
+}
+
+function openPopup(id) {
+  document.getElementById(id).style.display = "flex";
+}
+
+function closePopup(id) {
+  document.getElementById(id).style.display = "none";
+}
+
+function showPopupConfirm(candidateId) {
+  selectedCandidate = candidateId;
+  openPopup("popupConfirm");
+}
+
+document.getElementById("popupYes").addEventListener("click", () => {
+  if (selectedCandidate) {
+    closePopup("popupConfirm");
+    vote(selectedCandidate);
+  }
+});
+
+async function login() {
+  const name = document.getElementById("name").value.trim();
+  const token = document.getElementById("token").value.trim();
+  const msg = document.getElementById("loginMsg");
+  msg.textContent = "";
+  showLoading(true);
+  try {
+    const res = await fetch(WEB_APP_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "login", name, token })
+    });
+    const data = await res.json();
+    showLoading(false);
+    msg.textContent = data.message;
+    if (data.ok) {
+      localStorage.setItem("voterName", name);
+      localStorage.setItem("voterToken", token);
+      document.getElementById("loginArea").style.display = "none";
+      document.getElementById("voteArea").style.display = "block";
+      loadCandidates();
+    }
+  } catch {
+    showLoading(false);
+    msg.textContent = "❌ Gagal terhubung ke server.";
+  }
+}
+
+async function loadCandidates() {
+  showLoading(true);
+  try {
+    const res = await fetch(WEB_APP_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "getCandidates" })
+    });
+    const data = await res.json();
+    const div = document.getElementById("candidates");
+    div.innerHTML = "";
+    data.data.forEach(c => {
+      div.innerHTML += `
+        <div class="card">
+          <img src="${c.photo}" alt="${c.name}">
+          <h3>${c.name}</h3>
+          <p>${c.program}</p>
+          <button class="vote-btn" onclick="showPopupConfirm('${c.id}')">Pilih</button>
+        </div>
+      `;
+    });
+  } catch {
+    alert("❌ Gagal memuat calon.");
+  } finally {
+    showLoading(false);
+  }
+}
+
+async function vote(id) {
+  const name = localStorage.getItem("voterName");
+  const token = localStorage.getItem("voterToken");
+  showLoading(true);
+  try {
+    const res = await fetch(WEB_APP_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "vote", name, token, candidateId: id })
+    });
+    const data = await res.json();
+    showLoading(false);
+    if (data.ok) {
+      openPopup("popupSuccess");
+      setTimeout(() => {
+        closePopup("popupSuccess");
+        location.reload();
+      }, 2000);
+    } else {
+      alert(data.message);
+    }
+  } catch {
+    showLoading(false);
+    alert("❌ Gagal mengirim suara.");
+  }
+}
+</script>
+</body>
+</html>

@@ -7,72 +7,24 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root{
-      --bg:#f9fafb;
-      --card:#ffffff;
-      --muted:#6b7280;
-      --accent:#2563eb;
-      --text:#111827;
+      --bg:#f9fafb; --card:#ffffff; --muted:#6b7280; --accent:#2563eb; --text:#111827;
     }
     *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;
-      background:var(--bg);
-      color:var(--text);
-    }
+    body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;background:var(--bg);color:var(--text);}
     .app{display:flex;min-height:100vh}
-    .sidebar{
-      width:260px;
-      background:var(--card);
-      padding:20px;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      box-shadow:2px 0 8px rgba(0,0,0,0.1);
-    }
-    .brand{
-      font-weight:700;
-      letter-spacing:1px;
-      font-size:18px;
-      margin-bottom:10px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-    }
-    #closeSidebar{
-      background:none;
-      border:none;
-      font-size:20px;
-      cursor:pointer;
-      display:none;
-      color:var(--muted);
-    }
+    .sidebar{width:260px;background:var(--card);padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:2px 0 8px rgba(0,0,0,0.1);}
+    .brand{font-weight:700;letter-spacing:1px;font-size:18px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;}
+    #closeSidebar{background:none;border:none;font-size:20px;cursor:pointer;display:none;color:var(--muted);}
     .menu{flex:1}
-    .menu button{
-      width:100%;
-      background:transparent;
-      border:none;
-      color:var(--muted);
-      padding:10px 12px;
-      text-align:left;
-      border-radius:8px;
-      cursor:pointer;
-      font-size:15px;
-      transition:background 0.2s,color 0.2s;
-    }
+    .menu button{width:100%;background:transparent;border:none;color:var(--muted);padding:10px 12px;text-align:left;border-radius:8px;cursor:pointer;font-size:15px;transition:background 0.2s,color 0.2s;}
     .menu button:hover{background:rgba(0,0,0,0.05)}
-    .menu button.active{
-      background:var(--accent);
-      color:#fff;
-    }
+    .menu button.active{background:var(--accent);color:#fff;}
     .main{flex:1;padding:20px;display:flex;flex-direction:column;gap:16px}
     .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px}
-    .card{
-      background:var(--card);
-      padding:16px;
-      border-radius:12px;
-      box-shadow:0 2px 8px rgba(0,0,0,0.05);
-    }
+    .topbar .right{display:flex;align-items:center;gap:12px;}
+    .profile-btn{width:38px;height:38px;border-radius:50%;background:linear-gradient(180deg,#2dd4bf,#06b6d4);border:none;color:#fff;font-weight:700;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 4px rgba(0,0,0,0.15);}
+    .profile-btn:hover{opacity:.9}
+    .card{background:var(--card);padding:16px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.05);}
     .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
     .col-4{grid-column:span 4}
     .col-8{grid-column:span 8}
@@ -82,45 +34,21 @@
     th{font-size:13px;color:var(--muted)}
     td{font-size:14px}
     .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-    .login-card{
-      width:100%;max-width:420px;padding:28px;border-radius:12px;
-      background:var(--card);box-shadow:0 4px 20px rgba(0,0,0,0.1)
-    }
+    .login-card{width:100%;max-width:420px;padding:28px;border-radius:12px;background:var(--card);box-shadow:0 4px 20px rgba(0,0,0,0.1)}
     .field{display:flex;flex-direction:column;margin-bottom:12px}
-    .field input{
-      padding:10px;border-radius:8px;border:1px solid #d1d5db;
-      background:#fff;color:var(--text)
-    }
-    .btn{
-      background:var(--accent);color:#fff;padding:10px 14px;
-      border:none;border-radius:8px;cursor:pointer
-    }
+    .field input{padding:10px;border-radius:8px;border:1px solid #d1d5db;background:#fff;color:var(--text)}
+    .btn{background:var(--accent);color:#fff;padding:10px 14px;border:none;border-radius:8px;cursor:pointer}
     .btn:hover{opacity:.9}
     .muted{color:var(--muted)}
     .online-list{display:flex;flex-direction:column;gap:8px}
     .person{display:flex;align-items:center;gap:8px}
-    .avatar{
-      width:36px;height:36px;border-radius:999px;
-      background:linear-gradient(180deg,#2dd4bf,#06b6d4);
-      display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff
-    }
-
-    /* Responsive Sidebar */
+    .avatar{width:36px;height:36px;border-radius:999px;background:linear-gradient(180deg,#2dd4bf,#06b6d4);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff}
     @media (max-width:900px){
-      .sidebar{
-        position:fixed;
-        top:0;left:-100%;
-        width:80%;max-width:260px;
-        height:100%;background:var(--card);
-        transition:left .3s ease;
-        z-index:1000;
-      }
+      .sidebar{position:fixed;top:0;left:-100%;width:80%;max-width:260px;height:100%;background:var(--card);transition:left .3s ease;z-index:1000;}
       .sidebar.open{left:0}
       .main{padding:12px}
-      #closeSidebar{display:block;} /* tombol X hanya muncul di mobile */
+      #closeSidebar{display:block;}
     }
-
-    /* Grid jadi 1 kolom di HP */
     @media (max-width:768px){
       .grid{grid-template-columns:1fr}
       .col-4,.col-8,.col-12{grid-column:span 1}
@@ -128,25 +56,16 @@
       .topbar h2{font-size:18px}
       .btn{padding:12px 16px;font-size:15px}
     }
-
     @media (max-width:520px){.login-card{padding:18px}}
-
-    /* Loading Spinner */
-    #loadingOverlay{
-      position:fixed;top:0;left:0;width:100%;height:100%;
-      background:rgba(255,255,255,0.8);display:none;
-      align-items:center;justify-content:center;z-index:2000;
-    }
-    #loadingOverlay .spinner{
-      border:4px solid #e5e7eb;
-      border-top:4px solid var(--accent);
-      border-radius:50%;width:40px;height:40px;
-      animation:spin 1s linear infinite;
-    }
+    #loadingOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.8);display:none;align-items:center;justify-content:center;z-index:2000;}
+    #loadingOverlay .spinner{border:4px solid #e5e7eb;border-top:4px solid var(--accent);border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite;}
     @keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+    @keyframes fadeIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+    .field label{font-size:13px;color:var(--muted);margin-bottom:4px;}
   </style>
 </head>
 <body>
+  <!-- Login Page -->
   <div id="loginPage" class="login-wrap">
     <div class="login-card card">
       <h2>Login Peserta</h2>
@@ -160,6 +79,7 @@
     </div>
   </div>
 
+  <!-- Main App -->
   <div id="app" class="app" style="display:none">
     <aside class="sidebar card">
       <div class="brand">
@@ -180,10 +100,11 @@
       <div class="topbar">
         <button id="menuToggle" class="btn" style="background:var(--accent)">☰</button>
         <div>
-          <h2 id="greeting">Halo, Peserta</h2>
+          <h2 id="greeting">Dashboard</h2>
           <div class="muted" id="userInfo">-</div>
         </div>
-        <div>
+        <div class="right">
+          <button id="profileBtn" class="profile-btn" title="Lihat Profil">👤</button>
           <button id="logoutBtn" class="btn" style="background:#ef4444">Logout</button>
         </div>
       </div>
@@ -206,163 +127,120 @@
     </main>
   </div>
 
-  <!-- Loading Overlay -->
+  <!-- Loading -->
   <div id="loadingOverlay"><div class="spinner"></div></div>
 
+  <!-- Popup Profil + Ganti Password -->
+  <div id="profilePopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);align-items:center;justify-content:center;z-index:3000;">
+    <div style="background:var(--card);border-radius:12px;padding:24px;width:90%;max-width:400px;box-shadow:0 4px 20px rgba(0,0,0,0.2);position:relative;animation:fadeIn .25s ease;">
+      <button id="closeProfile" style="position:absolute;top:10px;right:12px;background:none;border:none;font-size:18px;color:var(--muted);cursor:pointer;">✕</button>
+      <h3 style="margin-top:0">Profil Pengguna</h3>
+      <div id="profileContent" style="font-size:14px;line-height:1.6;color:var(--text)">Memuat data...</div>
+      <hr style="margin:16px 0">
+      <h4>Ubah Password</h4>
+      <div class="field"><label>Password Lama</label><input type="password" id="oldPass" placeholder="Masukkan password lama"></div>
+      <div class="field"><label>Password Baru</label><input type="password" id="newPass" placeholder="Masukkan password baru"></div>
+      <button id="savePass" class="btn" style="width:100%">Simpan Password</button>
+      <p id="passMsg" class="muted" style="margin-top:8px;font-size:13px;"></p>
+    </div>
+  </div>
+
 <script>
-const CONFIG = {
-  API_URL: "https://script.google.com/macros/s/AKfycbxr0BSc8ZPCzodd8CmO_OYCkxKac9FjobP2a8Ekl5fTXtA6RXhgXp8Gv0uP7DqOkK2d/exec"
-};
-
-let DATA = { peserta:[], announcements:[] };
-let CURRENT_USER=null; let topChart=null;
-
-// ==== AUTO LOGOUT KARENA IDLE ====
-let idleTimer=null;
-const IDLE_LIMIT=2*60*1000;
-
-function resetIdleTimer(){
-  clearTimeout(idleTimer);
-  if(CURRENT_USER){
-    idleTimer=setTimeout(()=>{
-      alert("Anda otomatis logout karena tidak aktif lebih dari 2 menit.");
-      logout();
-    },IDLE_LIMIT);
-  }
+const CONFIG = { API_URL: "https://script.google.com/macros/s/AKfycbx5yfr43aCFz78NgAio3MxFKx_OMVD8ZOzo4zjiIkB7yFMGgL6fABBZzmk3kIpKCKrd/exec" };
+let DATA={peserta:[],announcements:[]};let CURRENT_USER=null;
+let topChart=null;let idleTimer=null;const IDLE_LIMIT=2*60*1000;
+function resetIdleTimer(){clearTimeout(idleTimer);if(CURRENT_USER){idleTimer=setTimeout(()=>{alert("Anda otomatis logout karena tidak aktif lebih dari 2 menit.");logout();},IDLE_LIMIT);} }
+["click","mousemove","keydown","scroll","touchstart"].forEach(e=>document.addEventListener(e,resetIdleTimer,false));
+async function loginUser(u,p,r){try{const resp=await fetch(`${CONFIG.API_URL}?action=login&username=${u}&password=${p}`);const user=await resp.json();if(user&&user.username){CURRENT_USER=user;if(r)localStorage.setItem('siswa_currentUser',JSON.stringify(user));onLoginSuccess();return true;}}catch(e){console.error(e)}return false;}
+function onLoginSuccess(){showApp();updateDashboard();resetIdleTimer();}
+async function logout(){if(CURRENT_USER){await fetch(`${CONFIG.API_URL}?action=logout&username=${CURRENT_USER.username}`);}localStorage.removeItem('siswa_currentUser');CURRENT_USER=null;showLogin();}
+function showLogin(){loginPage.style.display='flex';app.style.display='none'}
+function showApp(){loginPage.style.display='none';app.style.display='flex'}
+loginBtn.onclick=async()=>{if(!(await loginUser(username.value.trim(),password.value,remember.checked)))loginMsg.textContent="Login gagal";};
+logoutBtn.onclick=()=>logout();
+menuToggle.onclick=()=>document.querySelector('.sidebar').classList.toggle('open');
+closeSidebar.onclick=()=>document.querySelector('.sidebar').classList.remove('open');
+function loadRemembered(){const s=localStorage.getItem('siswa_currentUser');if(s){CURRENT_USER=JSON.parse(s);onLoginSuccess();}}
+async function loadFromGoogleSheets(showSpinner=false){try{if(showSpinner)showLoading(true);
+  const peserta=await fetch(`${CONFIG.API_URL}?action=getPeserta`);DATA.peserta=await peserta.json();
+  const ann=await fetch(`${CONFIG.API_URL}?action=getAnnouncements`);DATA.announcements=await ann.json();
+  updateDashboard();}catch(e){console.error(e)}finally{if(showSpinner)showLoading(false);} }
+function updateDashboard(){
+  if(CURRENT_USER){greeting.textContent=`Halo, ${CURRENT_USER.name}`;userInfo.textContent=`Username: ${CURRENT_USER.username} | Role: ${CURRENT_USER.role||"-"}`;document.getElementById('profileBtn').textContent=CURRENT_USER.name.split(' ').map(s=>s[0]).join('').slice(0,2).toUpperCase();}
+  const top=[...DATA.peserta].sort((a,b)=>b.activeScore-a.activeScore).slice(0,5);
+  const ctx=topChart?.ctx||document.getElementById('topChart').getContext('2d');
+  if(topChart)topChart.destroy();
+  topChart=new Chart(ctx,{type:'bar',data:{labels:top.map(t=>t.name),datasets:[{data:top.map(t=>Number(t.activeScore)),backgroundColor:varAccent()}]},options:{plugins:{legend:{display:false}}}});
+  const tbody=document.querySelector('#topTable tbody');tbody.innerHTML='';
+  [...DATA.peserta].sort((a,b)=>b.score-a.score).forEach(p=>tbody.innerHTML+=`<tr><td>${p.name}</td><td>${p.score}</td></tr>`);
+  const annDiv=document.getElementById('announcements');annDiv.innerHTML='';
+  DATA.announcements.forEach(a=>annDiv.innerHTML+=`<div><strong>${a.title}</strong> (${a.date})<div>${a.desc}</div></div><hr/>`);
+  const online=DATA.peserta.filter(p=>(p.online+"").toLowerCase()==="true");
+  const list=document.getElementById('onlineList');list.innerHTML='';
+  online.forEach(p=>list.innerHTML+=`<div class='person'><div class='avatar'>${p.name.split(' ').map(s=>s[0]).join('')}</div><div><strong>${p.name}</strong><div class='muted'>${p.username}</div></div></div>`);
 }
+function varAccent(){return getComputedStyle(document.documentElement).getPropertyValue('--accent');}
+function showLoading(s=true){loadingOverlay.style.display=s?"flex":"none";}
+setInterval(()=>loadFromGoogleSheets(false),10000);
+loadRemembered();loadFromGoogleSheets(true);
+document.querySelectorAll('#menuList button').forEach(btn=>{btn.addEventListener('click',()=>{const view=btn.dataset.view;
+  if(view==="keuangan"){if(CURRENT_USER&&CURRENT_USER.role==="admin")location.href="uangedit.html";else location.href="kas.html";return;}
+  if(view==="absen"){location.href="absen.html";return;}
+  if(view==="seleksi"){location.href="https://docs.google.com/spreadsheets/d/1Xhrr2cCN4ykeX5RcgNAt_oMcCO9TzkkzFHaz42QwjS4/edit?usp=sharing";return;}
+  if(view==="(Pemdi)Vigpro"){location.href="pemdi.html";return;}
+  document.querySelectorAll('#menuList button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');});});
 
-["click","mousemove","keydown","scroll","touchstart"].forEach(evt=>{
-  document.addEventListener(evt, resetIdleTimer, false);
+// ==== PROFIL POPUP + UBAH PASSWORD ====
+const profilePopup=document.getElementById('profilePopup');
+const profileContent=document.getElementById('profileContent');
+const closeProfile=document.getElementById('closeProfile');
+const passMsg=document.getElementById('passMsg');
+
+// ✅ Tambahan agar loading muncul saat membuka profil
+document.getElementById('profileBtn').addEventListener('click',async()=>{
+  if(!CURRENT_USER)return;
+  showLoading(true); // tampilkan loading
+  await new Promise(r=>setTimeout(r,400)); // simulasi delay agar terasa halus
+  const u=CURRENT_USER;
+  const now=new Date().toLocaleString('id-ID');
+  profileContent.innerHTML=`
+    <p><strong>Nama Lengkap:</strong> ${u.name||'-'}</p>
+    <p><strong>Username:</strong> ${u.username||'-'}</p>
+    <p><strong>Role:</strong> ${u.role||'-'}</p>
+    <p><strong>Status Login:</strong> Aktif</p>
+    <p><strong>Waktu Akses:</strong> ${now}</p>`;
+  showLoading(false); // sembunyikan loading
+  profilePopup.style.display='flex';
 });
 
-// ==== LOGIN & LOGOUT ====
-async function loginUser(username,password,remember){
-  try{
-    const resp=await fetch(`${CONFIG.API_URL}?action=login&username=${username}&password=${password}`);
-    const user=await resp.json();
-    if(user && user.username){
-      CURRENT_USER=user;
-      if(remember) localStorage.setItem('siswa_currentUser',JSON.stringify(user));
-      onLoginSuccess();
-      return true;
-    }
-  }catch(e){console.error(e)}
-  return false;
-}
+closeProfile.onclick=()=>profilePopup.style.display='none';
+profilePopup.addEventListener('click',e=>{if(e.target===profilePopup)profilePopup.style.display='none';});
 
-function onLoginSuccess(){
-  showApp();
-  updateDashboard();
-  resetIdleTimer();
-}
+// ==== GANTI PASSWORD (FIXED) ====
+document.getElementById("savePass").addEventListener("click", async () => {
+  const oldP = oldPass.value.trim(), newP = newPass.value.trim();
+  if (!oldP || !newP) { passMsg.textContent = "Isi semua kolom password."; return; }
 
-async function logout(){
-  if(CURRENT_USER){ await fetch(`${CONFIG.API_URL}?action=logout&username=${CURRENT_USER.username}`); }
-  localStorage.removeItem('siswa_currentUser'); CURRENT_USER=null; showLogin();
-}
-
-function showLogin(){
-  document.getElementById('loginPage').style.display='flex';
-  document.getElementById('app').style.display='none'
-}
-function showApp(){
-  document.getElementById('loginPage').style.display='none';
-  document.getElementById('app').style.display='flex'
-}
-
-document.getElementById('loginBtn').onclick=async()=>{
-  const u=document.getElementById('username').value.trim();
-  const p=document.getElementById('password').value;
-  const remember=document.getElementById('remember').checked;
-  if(!(await loginUser(u,p,remember))) document.getElementById('loginMsg').textContent="Login gagal";
-};
-document.getElementById('logoutBtn').onclick=()=>logout();
-document.getElementById('menuToggle').onclick=()=>{ document.querySelector('.sidebar').classList.toggle('open'); };
-document.getElementById('closeSidebar').onclick=()=>{ document.querySelector('.sidebar').classList.remove('open'); };
-
-function loadRemembered(){
-  const saved=localStorage.getItem('siswa_currentUser');
-  if(saved){CURRENT_USER=JSON.parse(saved);onLoginSuccess();}
-}
-
-// ==== LOAD DATA ====
-async function loadFromGoogleSheets(showSpinner=false){
-  try{
-    if(showSpinner) showLoading(true);
-    const pesertaResp=await fetch(`${CONFIG.API_URL}?action=getPeserta`);
-    DATA.peserta=await pesertaResp.json();
-    const annResp=await fetch(`${CONFIG.API_URL}?action=getAnnouncements`);
-    DATA.announcements=await annResp.json();
-    updateDashboard();
-  }catch(e){console.error(e)}
-  finally{
-    if(showSpinner) showLoading(false);
+  try {
+    showLoading(true);
+    const res = await fetch(CONFIG.API_URL, {
+      method: "POST",
+      body: new URLSearchParams({
+        action: "changePassword",
+        username: CURRENT_USER.username,
+        oldPass: oldP,
+        newPass: newP
+      }),
+    });
+    const text = await res.text();
+    passMsg.textContent = text.includes("berhasil")
+      ? "✅ Password berhasil diganti."
+      : "❌ Gagal ganti password: " + text;
+  } catch (err) {
+    passMsg.textContent = "❌ Terjadi kesalahan koneksi.";
+  } finally {
+    showLoading(false);
   }
-}
-
-function updateDashboard(){
-  if(CURRENT_USER){
-    document.getElementById('greeting').textContent=`Halo, ${CURRENT_USER.name}`;
-    document.getElementById('userInfo').textContent=`Username: ${CURRENT_USER.username} | Role: ${CURRENT_USER.role || "-"}`;
-  }
-  const top=[...DATA.peserta].sort((a,b)=>b.activeScore-a.activeScore).slice(0,5);
-  const labels=top.map(t=>t.name), values=top.map(t=>Number(t.activeScore));
-  const ctx=document.getElementById('topChart').getContext('2d'); if(topChart) topChart.destroy();
-  topChart=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Aktif',data:values,backgroundColor:varAccent()}]},options:{plugins:{legend:{display:false}}}});
-  const tbody=document.querySelector('#topTable tbody'); tbody.innerHTML='';
-  [...DATA.peserta].sort((a,b)=>b.score-a.score).forEach(p=>{tbody.innerHTML+=`<tr><td>${p.name}</td><td>${p.score}</td></tr>`});
-  const annDiv=document.getElementById('announcements'); annDiv.innerHTML='';
-  DATA.announcements.forEach(a=>{annDiv.innerHTML+=`<div><strong>${a.title}</strong> (${a.date})<div>${a.desc}</div></div><hr/>`});
-  const online=DATA.peserta.filter(p=>(p.online+"").toLowerCase()==="true");
-  const list=document.getElementById('onlineList'); list.innerHTML='';
-  online.forEach(p=>{list.innerHTML+=`<div class='person'><div class='avatar'>${p.name.split(' ').map(s=>s[0]).join('')}</div><div><strong>${p.name}</strong><div class='muted'>${p.username}</div></div></div>`});
-}
-
-function varAccent(){return getComputedStyle(document.documentElement).getPropertyValue('--accent');}
-
-function showLoading(show=true){
-  document.getElementById('loadingOverlay').style.display=show?"flex":"none";
-}
-
-// === AUTO REFRESH TANPA SPINNER ===
-setInterval(()=>loadFromGoogleSheets(false),10000);
-
-loadRemembered();
-loadFromGoogleSheets(true); // pertama kali tampilkan spinner
-
-// ==== MENU EVENT (cek role saat keuangan) ====
-document.querySelectorAll('#menuList button').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    const view=btn.dataset.view;
-
-    if(view==="keuangan"){
-      if(CURRENT_USER && CURRENT_USER.role==="admin"){
-        window.location.href="uangedit.html";
-      }else{
-        window.location.href="kas.html";
-      }
-      return;
-    }
-
-    if(view==="absen"){
-      window.location.href="absen.html"; // <-- buka halaman absen
-      return;
-    }
-
-    if(view==="seleksi"){
-      window.location.href="https://docs.google.com/spreadsheets/d/1Xhrr2cCN4ykeX5RcgNAt_oMcCO9TzkkzFHaz42QwjS4/edit?usp=sharing"; // <-- ganti dengan link Anda
-      return;
-    }
-
-    if(view==="(Pemdi)Vigpro"){
-      window.location.href="pemdi.html"; // <-- buka halaman absen
-      return;
-    }
-
-    // default: hanya aktifkan menu
-    document.querySelectorAll('#menuList button').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-  });
 });
 </script>
 </body>

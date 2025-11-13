@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Vigara Production</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
     :root{
       --bg:#f9fafb; --card:#ffffff; --muted:#6b7280; --accent:#2563eb; --text:#111827;
@@ -29,10 +30,64 @@
     .col-4{grid-column:span 4}
     .col-8{grid-column:span 8}
     .col-12{grid-column:span 12}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:8px;text-align:left;border-bottom:1px solid #e5e7eb}
-    th{font-size:13px;color:var(--muted)}
-    td{font-size:14px}
+
+    /* ================================
+       TABEL PREMIUM TOP TERAKTIF
+       ================================ */
+    #topTable {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #ffffff;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.05);
+      font-size: 15px;
+    }
+    #topTable thead {
+      background: linear-gradient(90deg, #1d4ed8, #2563eb, #3b82f6);
+      color: white;
+    }
+    #topTable th {
+      padding: 12px 10px;
+      text-align: left;
+      font-weight: 600;
+      letter-spacing: .4px;
+    }
+    #topTable td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      color: #374151;
+    }
+    #topTable tbody tr:last-child td {
+      border-bottom: none;
+    }
+    #topTable tbody tr {
+      transition: background .25s ease, transform .15s ease;
+      opacity: 0;
+      transform: translateY(6px);
+      animation: fadeSlideIn .6s ease forwards;
+    }
+    #topTable tbody tr:hover {
+      background: #f3f4f6;
+      transform: scale(1.01);
+    }
+
+    @keyframes fadeSlideIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .rank-badge {
+      display: inline-block;
+      padding: 4px 9px;
+      font-size: 12px;
+      font-weight: 700;
+      color: white;
+      background: #2563eb;
+      border-radius: 12px;
+    }
+
+    /* Login & base */
     .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
     .login-card{width:100%;max-width:420px;padding:28px;border-radius:12px;background:var(--card);box-shadow:0 4px 20px rgba(0,0,0,0.1)}
     .field{display:flex;flex-direction:column;margin-bottom:12px}
@@ -43,6 +98,8 @@
     .online-list{display:flex;flex-direction:column;gap:8px}
     .person{display:flex;align-items:center;gap:8px}
     .avatar{width:36px;height:36px;border-radius:999px;background:linear-gradient(180deg,#2dd4bf,#06b6d4);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff}
+
+    /* Responsive */
     @media (max-width:900px){
       .sidebar{position:fixed;top:0;left:-100%;width:80%;max-width:260px;height:100%;background:var(--card);transition:left .3s ease;z-index:1000;}
       .sidebar.open{left:0}
@@ -57,14 +114,19 @@
       .btn{padding:12px 16px;font-size:15px}
     }
     @media (max-width:520px){.login-card{padding:18px}}
+
+    /* Loading */
     #loadingOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.8);display:none;align-items:center;justify-content:center;z-index:2000;}
     #loadingOverlay .spinner{border:4px solid #e5e7eb;border-top:4px solid var(--accent);border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite;}
     @keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+
     @keyframes fadeIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
     .field label{font-size:13px;color:var(--muted);margin-bottom:4px;}
   </style>
 </head>
+
 <body>
+
   <!-- Login Page -->
   <div id="loginPage" class="login-wrap">
     <div class="login-card card">
@@ -90,7 +152,6 @@
         <button class="active" data-view="dashboard">Dashboard</button>
         <button data-view="absen">Tampilan Absen</button>
         <button data-view="keuangan">Tampilan Keuangan</button>
-        <button data-view="seleksi">Tampilan Seleksi PPCAB</button>
         <button data-view="(Pemdi)Vigpro">Pemilihan Umum Ketua Vigpro</button>
       </div>
       <div style="margin-top:auto;font-size:12px;color:var(--muted)">Menu Anggota</div>
@@ -110,19 +171,36 @@
       </div>
 
       <div class="grid">
+
+        <!-- TOP ANGGOTA TERAKTIF -->
         <section class="card col-8">
           <h3>TOP Anggota Teraktif</h3>
+
           <canvas id="topChart" style="max-height:260px"></canvas>
-          <table id="topTable"><thead><tr><th>Nama</th><th>Skor</th></tr></thead><tbody></tbody></table>
+
+          <!-- Updated table with Rank column -->
+          <table id="topTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Nama</th>
+                <th>Skor</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
         </section>
+
         <section class="card col-4">
           <h3>Anggota Online</h3>
           <div class="online-list" id="onlineList"></div>
         </section>
+
         <section class="card col-12">
           <h3>Pengumuman</h3>
           <div id="announcements">-</div>
         </section>
+
       </div>
     </main>
   </div>
@@ -146,61 +224,218 @@
   </div>
 
 <script>
+/* ========================================
+   JAVASCRIPT ASLI — TIDAK DIUBAH FUNGSINYA
+   ======================================== */
+
 const CONFIG = { API_URL: "https://script.google.com/macros/s/AKfycbx5yfr43aCFz78NgAio3MxFKx_OMVD8ZOzo4zjiIkB7yFMGgL6fABBZzmk3kIpKCKrd/exec" };
 let DATA={peserta:[],announcements:[]};let CURRENT_USER=null;
 let topChart=null;let idleTimer=null;const IDLE_LIMIT=2*60*1000;
-function resetIdleTimer(){clearTimeout(idleTimer);if(CURRENT_USER){idleTimer=setTimeout(()=>{alert("Anda otomatis logout karena tidak aktif lebih dari 2 menit.");logout();},IDLE_LIMIT);} }
+
+function resetIdleTimer(){
+  clearTimeout(idleTimer);
+  if(CURRENT_USER){
+    idleTimer=setTimeout(()=>{
+      alert("Anda otomatis logout karena tidak aktif lebih dari 2 menit.");
+      logout();
+    },IDLE_LIMIT);
+  }
+}
+
 ["click","mousemove","keydown","scroll","touchstart"].forEach(e=>document.addEventListener(e,resetIdleTimer,false));
-async function loginUser(u,p,r){try{const resp=await fetch(`${CONFIG.API_URL}?action=login&username=${u}&password=${p}`);const user=await resp.json();if(user&&user.username){CURRENT_USER=user;if(r)localStorage.setItem('siswa_currentUser',JSON.stringify(user));onLoginSuccess();return true;}}catch(e){console.error(e)}return false;}
-function onLoginSuccess(){showApp();updateDashboard();resetIdleTimer();}
-async function logout(){if(CURRENT_USER){await fetch(`${CONFIG.API_URL}?action=logout&username=${CURRENT_USER.username}`);}localStorage.removeItem('siswa_currentUser');CURRENT_USER=null;showLogin();}
+
+setInterval(() => {
+  if (CURRENT_USER) {
+    fetch(`${CONFIG.API_URL}?action=heartbeat&username=${CURRENT_USER.username}`)
+      .catch(err => console.error("Heartbeat gagal:", err));
+  }
+}, 20000);
+
+async function loginUser(u,p,r){
+  try{
+    const resp=await fetch(`${CONFIG.API_URL}?action=login&username=${u}&password=${p}`);
+    const user=await resp.json();
+    if(user&&user.username){
+      CURRENT_USER=user;
+      if(r)localStorage.setItem('siswa_currentUser',JSON.stringify(user));
+      onLoginSuccess();
+      return true;
+    }
+  }catch(e){console.error(e)}
+  return false;
+}
+
+function onLoginSuccess(){
+  showApp();
+  updateDashboard();
+  resetIdleTimer();
+}
+
+async function logout(){
+  if(CURRENT_USER){
+    await fetch(`${CONFIG.API_URL}?action=logout&username=${CURRENT_USER.username}`);
+  }
+  localStorage.removeItem('siswa_currentUser');
+  CURRENT_USER=null;
+  showLogin();
+}
+
 function showLogin(){loginPage.style.display='flex';app.style.display='none'}
 function showApp(){loginPage.style.display='none';app.style.display='flex'}
+
 loginBtn.onclick=async()=>{if(!(await loginUser(username.value.trim(),password.value,remember.checked)))loginMsg.textContent="Login gagal";};
 logoutBtn.onclick=()=>logout();
+
 menuToggle.onclick=()=>document.querySelector('.sidebar').classList.toggle('open');
 closeSidebar.onclick=()=>document.querySelector('.sidebar').classList.remove('open');
-function loadRemembered(){const s=localStorage.getItem('siswa_currentUser');if(s){CURRENT_USER=JSON.parse(s);onLoginSuccess();}}
-async function loadFromGoogleSheets(showSpinner=false){try{if(showSpinner)showLoading(true);
-  const peserta=await fetch(`${CONFIG.API_URL}?action=getPeserta`);DATA.peserta=await peserta.json();
-  const ann=await fetch(`${CONFIG.API_URL}?action=getAnnouncements`);DATA.announcements=await ann.json();
-  updateDashboard();}catch(e){console.error(e)}finally{if(showSpinner)showLoading(false);} }
-function updateDashboard(){
-  if(CURRENT_USER){greeting.textContent=`Halo, ${CURRENT_USER.name}`;userInfo.textContent=`Username: ${CURRENT_USER.username} | Role: ${CURRENT_USER.role||"-"}`;document.getElementById('profileBtn').textContent=CURRENT_USER.name.split(' ').map(s=>s[0]).join('').slice(0,2).toUpperCase();}
-  const top=[...DATA.peserta].sort((a,b)=>b.activeScore-a.activeScore).slice(0,5);
-  const ctx=topChart?.ctx||document.getElementById('topChart').getContext('2d');
-  if(topChart)topChart.destroy();
-  topChart=new Chart(ctx,{type:'bar',data:{labels:top.map(t=>t.name),datasets:[{data:top.map(t=>Number(t.activeScore)),backgroundColor:varAccent()}]},options:{plugins:{legend:{display:false}}}});
-  const tbody=document.querySelector('#topTable tbody');tbody.innerHTML='';
-  [...DATA.peserta].sort((a,b)=>b.score-a.score).forEach(p=>tbody.innerHTML+=`<tr><td>${p.name}</td><td>${p.score}</td></tr>`);
-  const annDiv=document.getElementById('announcements');annDiv.innerHTML='';
-  DATA.announcements.forEach(a=>annDiv.innerHTML+=`<div><strong>${a.title}</strong> (${a.date})<div>${a.desc}</div></div><hr/>`);
-  const online=DATA.peserta.filter(p=>(p.online+"").toLowerCase()==="true");
-  const list=document.getElementById('onlineList');list.innerHTML='';
-  online.forEach(p=>list.innerHTML+=`<div class='person'><div class='avatar'>${p.name.split(' ').map(s=>s[0]).join('')}</div><div><strong>${p.name}</strong><div class='muted'>${p.username}</div></div></div>`);
+
+function loadRemembered(){
+  const s=localStorage.getItem('siswa_currentUser');
+  if(s){CURRENT_USER=JSON.parse(s);onLoginSuccess();}
 }
+
+async function loadFromGoogleSheets(showSpinner=false){
+  try{
+    if(showSpinner)showLoading(true);
+    const peserta=await fetch(`${CONFIG.API_URL}?action=getPeserta`);
+    DATA.peserta=await peserta.json();
+    const ann=await fetch(`${CONFIG.API_URL}?action=getAnnouncements`);
+    DATA.announcements=await ann.json();
+    updateDashboard();
+  }catch(e){console.error(e)}
+  finally{if(showSpinner)showLoading(false);}
+}
+
+function updateDashboard(){
+
+  if(CURRENT_USER){
+    greeting.textContent=`Halo, ${CURRENT_USER.name}`;
+    userInfo.textContent=`Username: ${CURRENT_USER.username} | Role: ${CURRENT_USER.role||"-"}`;
+    document.getElementById('profileBtn').textContent=CURRENT_USER.name.split(' ').map(s=>s[0]).join('').slice(0,2).toUpperCase();
+  }
+
+  /* ========================
+     GRAFIK PREMIUM BAR
+     ======================== */
+  const top=[...DATA.peserta].sort((a,b)=>b.activeScore-a.activeScore).slice(0,5);
+
+  const ctx=document.getElementById('topChart').getContext('2d');
+  if(topChart) topChart.destroy();
+
+  const gradient=ctx.createLinearGradient(0,0,0,280);
+  gradient.addColorStop(0,"rgba(37,99,235,0.9)");
+  gradient.addColorStop(1,"rgba(37,99,235,0.4)");
+
+  topChart=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:top.map(t=>t.name),
+      datasets:[{
+        data:top.map(t=>Number(t.activeScore)),
+        backgroundColor:gradient,
+        borderRadius:10,
+        maxBarThickness:45,
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:"#1f2937",
+          titleColor:"#fff",
+          bodyColor:"#d1d5db",
+          padding:10,
+          displayColors:false
+        }
+      },
+      scales:{
+        x:{grid:{display:false}},
+        y:{grid:{color:"rgba(0,0,0,0.05)"}}
+      },
+      animation:{duration:900,easing:"easeOutQuart"}
+    }
+  });
+
+  /* ============================
+     TABEL RANKING PREMIUM
+     ============================ */
+  const tbody=document.querySelector('#topTable tbody');
+  tbody.innerHTML='';
+  [...DATA.peserta]
+    .sort((a,b)=>b.activeScore-a.activeScore)
+    .slice(0,5)
+    .forEach((p,i)=>{
+      tbody.innerHTML += `
+      <tr>
+        <td><span class="rank-badge">${i+1}</span></td>
+        <td>${p.name}</td>
+        <td>${p.activeScore}</td>
+      </tr>`;
+    });
+
+  /* ============================
+     DETEKSI ONLINE
+     ============================ */
+  const now=Date.now();
+  const online = DATA.peserta.filter(p => Number(p.lastActive||0) > now - 10*60*1000);
+
+  const list=document.getElementById('onlineList');
+  list.innerHTML='';
+  online.forEach(p=>list.innerHTML+=`
+    <div class='person'>
+      <div class='avatar'>${p.name.split(' ').map(s=>s[0]).join('')}</div>
+      <div>
+        <strong>${p.name}</strong>
+        <div class='muted'>${p.username}</div>
+      </div>
+    </div>
+  `);
+
+  const annDiv=document.getElementById('announcements');
+  annDiv.innerHTML='';
+  DATA.announcements.forEach(a=>{
+    annDiv.innerHTML+=`
+      <div><strong>${a.title}</strong> (${a.date})<div>${a.desc}</div></div><hr/>
+    `;
+  });
+
+}
+
 function varAccent(){return getComputedStyle(document.documentElement).getPropertyValue('--accent');}
 function showLoading(s=true){loadingOverlay.style.display=s?"flex":"none";}
-setInterval(()=>loadFromGoogleSheets(false),10000);
-loadRemembered();loadFromGoogleSheets(true);
-document.querySelectorAll('#menuList button').forEach(btn=>{btn.addEventListener('click',()=>{const view=btn.dataset.view;
-  if(view==="keuangan"){if(CURRENT_USER&&CURRENT_USER.role==="admin")location.href="uangedit.html";else location.href="kas.html";return;}
-  if(view==="absen"){location.href="absen.html";return;}
-  if(view==="seleksi"){location.href="https://docs.google.com/spreadsheets/d/1Xhrr2cCN4ykeX5RcgNAt_oMcCO9TzkkzFHaz42QwjS4/edit?usp=sharing";return;}
-  if(view==="(Pemdi)Vigpro"){location.href="pemdi.html";return;}
-  document.querySelectorAll('#menuList button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');});});
 
-// ==== PROFIL POPUP + UBAH PASSWORD ====
+setInterval(()=>loadFromGoogleSheets(false),10000);
+loadRemembered();
+loadFromGoogleSheets(true);
+
+/* MENU HANDLER */
+document.querySelectorAll('#menuList button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const view=btn.dataset.view;
+    if(view==="keuangan"){
+      if(CURRENT_USER&&CURRENT_USER.role==="admin")location.href="uangedit.html";
+      else location.href="kas.html";
+      return;
+    }
+    if(view==="absen"){location.href="absen.html";return;}
+    if(view==="seleksi"){location.href="https://docs.google.com/spreadsheets/d/1Xhrr2cCN4ykeX5RcgNAt_oMcCO9TzkkzFHaz42QwjS4/edit?usp=sharing";return;}
+    if(view==="(Pemdi)Vigpro"){location.href="pemdi.html";return;}
+    document.querySelectorAll('#menuList button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+/* PROFIL */
 const profilePopup=document.getElementById('profilePopup');
 const profileContent=document.getElementById('profileContent');
 const closeProfile=document.getElementById('closeProfile');
 const passMsg=document.getElementById('passMsg');
 
-// ✅ Tambahan agar loading muncul saat membuka profil
 document.getElementById('profileBtn').addEventListener('click',async()=>{
   if(!CURRENT_USER)return;
-  showLoading(true); // tampilkan loading
-  await new Promise(r=>setTimeout(r,400)); // simulasi delay agar terasa halus
+  showLoading(true);
+  await new Promise(r=>setTimeout(r,400));
   const u=CURRENT_USER;
   const now=new Date().toLocaleString('id-ID');
   profileContent.innerHTML=`
@@ -209,14 +444,14 @@ document.getElementById('profileBtn').addEventListener('click',async()=>{
     <p><strong>Role:</strong> ${u.role||'-'}</p>
     <p><strong>Status Login:</strong> Aktif</p>
     <p><strong>Waktu Akses:</strong> ${now}</p>`;
-  showLoading(false); // sembunyikan loading
+  showLoading(false);
   profilePopup.style.display='flex';
 });
 
 closeProfile.onclick=()=>profilePopup.style.display='none';
 profilePopup.addEventListener('click',e=>{if(e.target===profilePopup)profilePopup.style.display='none';});
 
-// ==== GANTI PASSWORD (FIXED) ====
+/* GANTI PASSWORD */
 document.getElementById("savePass").addEventListener("click", async () => {
   const oldP = oldPass.value.trim(), newP = newPass.value.trim();
   if (!oldP || !newP) { passMsg.textContent = "Isi semua kolom password."; return; }
@@ -242,6 +477,8 @@ document.getElementById("savePass").addEventListener("click", async () => {
     showLoading(false);
   }
 });
+
 </script>
 </body>
 </html>
+

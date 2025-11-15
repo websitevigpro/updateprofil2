@@ -154,8 +154,7 @@
   <button id="menuPeserta" data-view="peserta" style="display:none">Peserta</button>
   <button data-view="absen">Absen Point</button>
   <button data-view="keuangan">Kas Anggota</button>
-  <button data-view="(Pemdi)Vigpro">Voting Digital</button>
-
+  <button data-view="voting">Voting Digital</button>
 </div>
 
       <div style="margin-top:auto;font-size:12px;color:var(--muted)">Menu Anggota</div>
@@ -441,6 +440,12 @@ document.querySelectorAll('#menuList button').forEach(btn=>{
     if(view==="keuangan"){
       if(CURRENT_USER && CURRENT_USER.role==="admin") location.href="uangedit.html";
       else location.href="kas.html";
+      return;
+    }
+
+     if(view==="voting"){
+      if(CURRENT_USER && CURRENT_USER.role==="admin") location.href="admin_pemdi.html";
+      else location.href="pemdi.html";
       return;
     }
 

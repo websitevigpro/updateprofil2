@@ -149,11 +149,15 @@
         <button id="closeSidebar">✕</button>
       </div>
       <div class="menu" id="menuList">
-        <button class="active" data-view="dashboard">Dashboard</button>
-        <button data-view="absen">Tampilan Absen</button>
-        <button data-view="keuangan">Tampilan Keuangan</button>
-        <button data-view="(Pemdi)Vigpro">Pemilihan Umum Ketua Vigpro</button>
-      </div>
+  <button class="active" data-view="dashboard">Dashboard</button>
+  <!-- MENU KHUSUS ADMIN -->
+  <button id="menuPeserta" data-view="peserta" style="display:none">Peserta</button>
+  <button data-view="absen">Absen Point</button>
+  <button data-view="keuangan">Kas Anggota</button>
+  <button data-view="(Pemdi)Vigpro">Voting Digital</button>
+
+</div>
+
       <div style="margin-top:auto;font-size:12px;color:var(--muted)">Menu Anggota</div>
     </aside>
 
@@ -225,13 +229,19 @@
 
 <script>
 /* ========================================
-   JAVASCRIPT ASLI — TIDAK DIUBAH FUNGSINYA
+   JAVASCRIPT FINAL (UPDATE MENU ADMIN PESERTA)
    ======================================== */
 
-const CONFIG = { API_URL: "https://script.google.com/macros/s/AKfycbx5yfr43aCFz78NgAio3MxFKx_OMVD8ZOzo4zjiIkB7yFMGgL6fABBZzmk3kIpKCKrd/exec" };
-let DATA={peserta:[],announcements:[]};let CURRENT_USER=null;
-let topChart=null;let idleTimer=null;const IDLE_LIMIT=2*60*1000;
+const CONFIG = { API_URL: "https://script.google.com/macros/s/AKfycbz5pOql3rRE14PBcJV54StInRZFxEv92tDQqtLMPvmckNe-FSVVQC7oS1_0ch0Mi0o8/exec" };
+let DATA={peserta:[],announcements:[]};
+let CURRENT_USER=null;
+let topChart=null;
+let idleTimer=null;
+const IDLE_LIMIT=2*60*1000;
 
+/* ------------------------------
+   SISTEM ANTI IDLE AUTO LOGOUT
+-------------------------------- */
 function resetIdleTimer(){
   clearTimeout(idleTimer);
   if(CURRENT_USER){
@@ -242,8 +252,13 @@ function resetIdleTimer(){
   }
 }
 
-["click","mousemove","keydown","scroll","touchstart"].forEach(e=>document.addEventListener(e,resetIdleTimer,false));
+["click","mousemove","keydown","scroll","touchstart"].forEach(e =>
+  document.addEventListener(e, resetIdleTimer, false)
+);
 
+/* ------------------------------
+   HEARTBEAT ONLINE USER
+-------------------------------- */
 setInterval(() => {
   if (CURRENT_USER) {
     fetch(`${CONFIG.API_URL}?action=heartbeat&username=${CURRENT_USER.username}`)
@@ -251,13 +266,18 @@ setInterval(() => {
   }
 }, 20000);
 
+/* ------------------------------
+   LOGIN
+-------------------------------- */
 async function loginUser(u,p,r){
   try{
     const resp=await fetch(`${CONFIG.API_URL}?action=login&username=${u}&password=${p}`);
     const user=await resp.json();
-    if(user&&user.username){
+    if(user && user.username){
       CURRENT_USER=user;
-      if(r)localStorage.setItem('siswa_currentUser',JSON.stringify(user));
+
+      if(r) localStorage.setItem('siswa_currentUser', JSON.stringify(user));
+
       onLoginSuccess();
       return true;
     }
@@ -269,8 +289,21 @@ function onLoginSuccess(){
   showApp();
   updateDashboard();
   resetIdleTimer();
+
+  /* ======================================================
+     MENU PESERTA — HANYA MUNCUL UNTUK ROLE ADMIN
+     ====================================================== */
+  const menuPeserta = document.getElementById("menuPeserta");
+  if (CURRENT_USER && CURRENT_USER.role === "admin") {
+    if (menuPeserta) menuPeserta.style.display = "block";
+  } else {
+    if (menuPeserta) menuPeserta.style.display = "none";
+  }
 }
 
+/* ------------------------------
+   LOGOUT
+-------------------------------- */
 async function logout(){
   if(CURRENT_USER){
     await fetch(`${CONFIG.API_URL}?action=logout&username=${CURRENT_USER.username}`);
@@ -283,42 +316,57 @@ async function logout(){
 function showLogin(){loginPage.style.display='flex';app.style.display='none'}
 function showApp(){loginPage.style.display='none';app.style.display='flex'}
 
-loginBtn.onclick=async()=>{if(!(await loginUser(username.value.trim(),password.value,remember.checked)))loginMsg.textContent="Login gagal";};
+loginBtn.onclick = async () => {
+  if(!(await loginUser(username.value.trim(), password.value, remember.checked)))
+    loginMsg.textContent="Login gagal";
+};
 logoutBtn.onclick=()=>logout();
 
 menuToggle.onclick=()=>document.querySelector('.sidebar').classList.toggle('open');
 closeSidebar.onclick=()=>document.querySelector('.sidebar').classList.remove('open');
 
+/* ------------------------------
+   AUTO LOGIN (REMEMBER ME)
+-------------------------------- */
 function loadRemembered(){
   const s=localStorage.getItem('siswa_currentUser');
-  if(s){CURRENT_USER=JSON.parse(s);onLoginSuccess();}
+  if(s){
+    CURRENT_USER=JSON.parse(s);
+    onLoginSuccess();
+  }
 }
 
+/* ------------------------------
+   LOAD DATA GOOGLE SHEETS
+-------------------------------- */
 async function loadFromGoogleSheets(showSpinner=false){
   try{
     if(showSpinner)showLoading(true);
+
     const peserta=await fetch(`${CONFIG.API_URL}?action=getPeserta`);
     DATA.peserta=await peserta.json();
+
     const ann=await fetch(`${CONFIG.API_URL}?action=getAnnouncements`);
     DATA.announcements=await ann.json();
+
     updateDashboard();
   }catch(e){console.error(e)}
   finally{if(showSpinner)showLoading(false);}
 }
 
+/* ------------------------------
+   DASHBOARD UPDATE VISUAL
+-------------------------------- */
 function updateDashboard(){
 
   if(CURRENT_USER){
     greeting.textContent=`Halo, ${CURRENT_USER.name}`;
     userInfo.textContent=`Username: ${CURRENT_USER.username} | Role: ${CURRENT_USER.role||"-"}`;
-    document.getElementById('profileBtn').textContent=CURRENT_USER.name.split(' ').map(s=>s[0]).join('').slice(0,2).toUpperCase();
+    document.getElementById('profileBtn').textContent = CURRENT_USER.name.split(' ').map(s=>s[0]).join('').slice(0,2).toUpperCase();
   }
 
-  /* ========================
-     GRAFIK PREMIUM BAR
-     ======================== */
+  /* ====== GRAFIK TOP ANGGOTA ====== */
   const top=[...DATA.peserta].sort((a,b)=>b.activeScore-a.activeScore).slice(0,5);
-
   const ctx=document.getElementById('topChart').getContext('2d');
   if(topChart) topChart.destroy();
 
@@ -339,16 +387,7 @@ function updateDashboard(){
     },
     options:{
       responsive:true,
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:"#1f2937",
-          titleColor:"#fff",
-          bodyColor:"#d1d5db",
-          padding:10,
-          displayColors:false
-        }
-      },
+      plugins:{ legend:{display:false} },
       scales:{
         x:{grid:{display:false}},
         y:{grid:{color:"rgba(0,0,0,0.05)"}}
@@ -357,9 +396,7 @@ function updateDashboard(){
     }
   });
 
-  /* ============================
-     TABEL RANKING PREMIUM
-     ============================ */
+  /* ====== TABEL TOP 5 ====== */
   const tbody=document.querySelector('#topTable tbody');
   tbody.innerHTML='';
   [...DATA.peserta]
@@ -367,22 +404,23 @@ function updateDashboard(){
     .slice(0,5)
     .forEach((p,i)=>{
       tbody.innerHTML += `
-      <tr>
-        <td><span class="rank-badge">${i+1}</span></td>
-        <td>${p.name}</td>
-        <td>${p.activeScore}</td>
-      </tr>`;
+        <tr>
+          <td><span class="rank-badge">${i+1}</span></td>
+          <td>${p.name}</td>
+          <td>${p.activeScore}</td>
+        </tr>`;
     });
 
-  /* ============================
-     DETEKSI ONLINE
-     ============================ */
-  const now=Date.now();
-  const online = DATA.peserta.filter(p => Number(p.lastActive||0) > now - 10*60*1000);
+  /* ====== DETEKSI ONLINE ====== */
+  const now = Date.now();
+  const online = DATA.peserta.filter(p => {
+    const t = p.lastActive ? new Date(p.lastActive).getTime() : 0;
+    return t > now - 10*60*1000;
+  });
 
-  const list=document.getElementById('onlineList');
-  list.innerHTML='';
-  online.forEach(p=>list.innerHTML+=`
+  const list = document.getElementById('onlineList');
+  list.innerHTML = '';
+  online.forEach(p => list.innerHTML += `
     <div class='person'>
       <div class='avatar'>${p.name.split(' ').map(s=>s[0]).join('')}</div>
       <div>
@@ -391,92 +429,121 @@ function updateDashboard(){
       </div>
     </div>
   `);
-
-  const annDiv=document.getElementById('announcements');
-  annDiv.innerHTML='';
-  DATA.announcements.forEach(a=>{
-    annDiv.innerHTML+=`
-      <div><strong>${a.title}</strong> (${a.date})<div>${a.desc}</div></div><hr/>
-    `;
-  });
-
 }
 
-function varAccent(){return getComputedStyle(document.documentElement).getPropertyValue('--accent');}
-function showLoading(s=true){loadingOverlay.style.display=s?"flex":"none";}
-
-setInterval(()=>loadFromGoogleSheets(false),10000);
-loadRemembered();
-loadFromGoogleSheets(true);
-
-/* MENU HANDLER */
+/* ------------------------------
+   MENU HANDLER (Termasuk Peserta)
+-------------------------------- */
 document.querySelectorAll('#menuList button').forEach(btn=>{
   btn.addEventListener('click',()=>{
     const view=btn.dataset.view;
+
     if(view==="keuangan"){
-      if(CURRENT_USER&&CURRENT_USER.role==="admin")location.href="uangedit.html";
+      if(CURRENT_USER && CURRENT_USER.role==="admin") location.href="uangedit.html";
       else location.href="kas.html";
       return;
     }
+
     if(view==="absen"){location.href="absen.html";return;}
-    if(view==="seleksi"){location.href="https://docs.google.com/spreadsheets/d/1Xhrr2cCN4ykeX5RcgNAt_oMcCO9TzkkzFHaz42QwjS4/edit?usp=sharing";return;}
+    if(view==="seleksi"){location.href="https://docs.google.com/spreadsheets/...";return;}
     if(view==="(Pemdi)Vigpro"){location.href="pemdi.html";return;}
+
+    /* ======================================================
+       ROUTE MENU PESERTA KHUSUS ADMIN
+     ====================================================== */
+    if(view==="peserta"){
+      location.href="adminpeserta.html";
+      return;
+    }
+
     document.querySelectorAll('#menuList button').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
   });
 });
 
-/* PROFIL */
+/* ------------------------------
+   PROFIL POPUP
+-------------------------------- */
 const profilePopup=document.getElementById('profilePopup');
 const profileContent=document.getElementById('profileContent');
-const closeProfile=document.getElementById('closeProfile');
 const passMsg=document.getElementById('passMsg');
 
-document.getElementById('profileBtn').addEventListener('click',async()=>{
+document.getElementById('profileBtn').addEventListener('click', async () => {
   if(!CURRENT_USER)return;
   showLoading(true);
   await new Promise(r=>setTimeout(r,400));
+
   const u=CURRENT_USER;
   const now=new Date().toLocaleString('id-ID');
+
   profileContent.innerHTML=`
     <p><strong>Nama Lengkap:</strong> ${u.name||'-'}</p>
     <p><strong>Username:</strong> ${u.username||'-'}</p>
     <p><strong>Role:</strong> ${u.role||'-'}</p>
     <p><strong>Status Login:</strong> Aktif</p>
-    <p><strong>Waktu Akses:</strong> ${now}</p>`;
+    <p><strong>Waktu Akses:</strong> ${now}</p>
+  `;
+
   showLoading(false);
   profilePopup.style.display='flex';
 });
 
-closeProfile.onclick=()=>profilePopup.style.display='none';
-profilePopup.addEventListener('click',e=>{if(e.target===profilePopup)profilePopup.style.display='none';});
+document.getElementById('closeProfile').onclick=()=>profilePopup.style.display='none';
+profilePopup.addEventListener('click',e=>{
+  if(e.target===profilePopup) profilePopup.style.display='none';
+});
 
-/* GANTI PASSWORD */
+/* ------------------------------
+   GANTI PASSWORD
+-------------------------------- */
 document.getElementById("savePass").addEventListener("click", async () => {
-  const oldP = oldPass.value.trim(), newP = newPass.value.trim();
-  if (!oldP || !newP) { passMsg.textContent = "Isi semua kolom password."; return; }
+  const oldP = oldPass.value.trim(),
+        newP = newPass.value.trim();
 
-  try {
+  if (!oldP || !newP){
+    passMsg.textContent = "Isi semua kolom password.";
+    return;
+  }
+
+  try{
     showLoading(true);
+
     const res = await fetch(CONFIG.API_URL, {
       method: "POST",
       body: new URLSearchParams({
-        action: "changePassword",
-        username: CURRENT_USER.username,
-        oldPass: oldP,
-        newPass: newP
+        action:"changePassword",
+        username:CURRENT_USER.username,
+        oldPass:oldP,
+        newPass:newP
       }),
     });
-    const text = await res.text();
+
+    const text=await res.text();
     passMsg.textContent = text.includes("berhasil")
       ? "✅ Password berhasil diganti."
-      : "❌ Gagal ganti password: " + text;
-  } catch (err) {
+      : "❌ Gagal: " + text;
+
+  }catch(err){
     passMsg.textContent = "❌ Terjadi kesalahan koneksi.";
-  } finally {
+  }finally{
     showLoading(false);
   }
 });
+
+/* ------------------------------
+   LOADING
+-------------------------------- */
+function showLoading(s=true){
+  loadingOverlay.style.display=s?"flex":"none";
+}
+
+/* ------------------------------
+   INIT
+-------------------------------- */
+setInterval(()=>loadFromGoogleSheets(false),10000);
+loadRemembered();
+loadFromGoogleSheets(true);
+
 
 </script>
 </body>

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin Panel - Vigara Production</title>
+
+<style>
+  :root {
+    --primary: #2563eb;
+    --green: #10b981;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --card-bg: #ffffff;
+    --shadow: 0 2px 10px rgba(0,0,0,0.08);
+  }
+
+  body {
+    font-family: Arial, sans-serif;
+    background: #f3f4f6;
+    margin: 0;
+  }
+
+  .wrapper {
+    max-width: 1100px;
+    margin: auto;
+    padding: 15px;
+  }
+
+  h1 {
+    font-size: 22px;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+
+  .card {
+    background: var(--card-bg);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+
+  h2 {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  /* TABLE WRAPPER AGAR BISA DI SCROLL DI HP */
+  .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    min-width: 600px;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  th, td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+  }
+  th {
+    background: var(--primary);
+    color: white;
+    text-align: left;
+  }
+
+  button {
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-edit { background: var(--blue); color: white; width: 70px; }
+  .btn-del  { background: var(--red);  color: white; width: 70px; }
+  .btn-add  { background: var(--green); color: white; margin-bottom: 10px; width: 100%; }
+
+  /* POPUP */
+  .popup {
+    position: fixed;
+    inset: 0;
+    display: none;
+    background: rgba(0,0,0,0.5);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .popup-content {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: var(--shadow);
+  }
+
+  .field {
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .field input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+
+  /* LOADING ANIMATION */
+  #loadingScreen {
+    position: fixed;
+    inset: 0;
+    background: rgba(255,255,255,0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+
+  .loader {
+    width: 45px;
+    height: 45px;
+    border: 5px solid var(--primary);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* MOBILE OPTIMIZATION */
+  @media (max-width: 600px) {
+    h1 { font-size: 20px; }
+    h2 { font-size: 16px; }
+    button { font-size: 13px; padding: 6px 10px; }
+    .popup-content { padding: 15px; }
+  }
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+  <h1>INPUT PESERTA</h1>
+
+  <!-- PESERTA -->
+  <div class="card">
+    <h2>Kelola Peserta</h2>
+    <button class="btn-add" onclick="openAddPeserta()">+ Tambah Peserta</button>
+
+    <div class="table-wrapper">
+      <table id="pesertaTable">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PENGUMUMAN -->
+  <div class="card">
+    <h2>Kelola Pengumuman</h2>
+
+    <div class="table-wrapper">
+      <table id="annTable">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- POPUP EDIT -->
+<div id="popupEdit" class="popup">
+  <div class="popup-content">
+    <h3 style="margin-top:0;">Edit Data</h3>
+    <div id="formEdit"></div>
+    <button onclick="saveEdit()" style="background:#2563eb;color:white;width:100%;margin-top:10px;">Simpan</button>
+    <button onclick="closePopup()" style="width:100%;margin-top:8px;">Batal</button>
+  </div>
+</div>
+
+<!-- POPUP ADD -->
+<div id="popupAdd" class="popup">
+  <div class="popup-content">
+    <h3 style="margin-top:0;">Tambah Peserta</h3>
+    <div id="formAdd"></div>
+    <button onclick="saveAdd()" style="background:#10b981;color:white;width:100%;margin-top:10px;">Tambah</button>
+    <button onclick="closePopup()" style="width:100%;margin-top:8px;">Batal</button>
+  </div>
+</div>
+
+<!-- LOADING SCREEN -->
+<div id="loadingScreen">
+  <div class="loader"></div>
+</div>
+
+<script>
+const API = "https://script.google.com/macros/s/AKfycbyrJMNTLCg9epyhiGbMkMhJBC8ZXEpJL2k7Ci0lfCBHfSWX954oUE3tbPW9GWSqtVk2/exec";
+
+let pesertaHeader = [];
+let currentEdit = null;
+
+/* SHOW / HIDE LOADING */
+function showLoading() {
+  document.getElementById("loadingScreen").style.display = "flex";
+}
+function hideLoading() {
+  document.getElementById("loadingScreen").style.display = "none";
+}
+
+async function loadData() {
+  showLoading();
+
+  const peserta = await fetch(API + "?action=getPeserta").then(r => r.json());
+  const ann = await fetch(API + "?action=getAnnouncements").then(r => r.json());
+
+  renderPeserta(peserta);
+  renderAnnouncements(ann);
+
+  hideLoading();
+}
+
+function renderPeserta(list) {
+  const table = document.getElementById("pesertaTable");
+  const head = table.querySelector("thead");
+  const body = table.querySelector("tbody");
+
+  pesertaHeader = Object.keys(list[0] || {});
+
+  head.innerHTML = `
+    <tr>
+      ${pesertaHeader.map(h => `<th>${h}</th>`).join("")}
+      <th>Aksi</th>
+    </tr>
+  `;
+
+  body.innerHTML = list.map(row => `
+    <tr>
+      ${pesertaHeader.map(h => `<td>${row[h]}</td>`).join("")}
+      <td>
+        <button class="btn-edit" onclick='openEdit(${JSON.stringify(row)})'>Edit</button>
+        <button class="btn-del" onclick='delPeserta("${row.username}")'>Hapus</button>
+      </td>
+    </tr>
+  `).join("");
+}
+
+function renderAnnouncements(list) {
+  const table = document.getElementById("annTable");
+  const head = table.querySelector("thead");
+  const body = table.querySelector("tbody");
+
+  const headers = Object.keys(list[0] || {});
+
+  head.innerHTML = `
+    <tr>
+      ${headers.map(h => `<th>${h}</th>`).join("")}
+      <th>Aksi</th>
+    </tr>
+  `;
+
+  body.innerHTML = list.map(row => `
+    <tr>
+      ${headers.map(h => `<td>${row[h]}</td>`).join("")}
+      <td>
+        <button class="btn-edit" onclick='openEdit(${JSON.stringify(row)}, true)'>Edit</button>
+        <button class="btn-del" onclick='delAnn("${row.id}")'>Hapus</button>
+      </td>
+    </tr>
+  `).join("");
+}
+
+/* ==== EDIT ==== */
+function openEdit(row, isAnn=false) {
+  currentEdit = { row, isAnn };
+  const box = document.getElementById("formEdit");
+
+  box.innerHTML = Object.keys(row).map(k => `
+    <div class="field">
+      <label>${k}</label>
+      <input id="edit_${k}" value="${row[k]}">
+    </div>
+  `).join("");
+
+  document.getElementById("popupEdit").style.display = "flex";
+}
+
+/* ==== ADD ==== */
+function openAddPeserta() {
+  const box = document.getElementById("formAdd");
+
+  box.innerHTML = pesertaHeader.map(k => `
+    <div class="field">
+      <label>${k}</label>
+      <input id="add_${k}">
+    </div>
+  `).join("");
+
+  document.getElementById("popupAdd").style.display = "flex";
+}
+
+/* ==== SAVE EDIT ==== */
+async function saveEdit() {
+  showLoading();
+
+  const { row, isAnn } = currentEdit;
+  const updated = {};
+
+  for (const k in row) {
+    updated[k] = document.getElementById(`edit_${k}`).value;
+  }
+
+  const act = isAnn ? "saveAnnouncement" : "savePeserta";
+
+  await fetch(API, {
+    method: "POST",
+    body: new URLSearchParams({
+      action: act,
+      data: JSON.stringify(updated)
+    })
+  });
+
+  closePopup();
+  hideLoading();
+  loadData();
+}
+
+/* ==== SAVE ADD ==== */
+async function saveAdd() {
+  showLoading();
+
+  const row = {};
+  pesertaHeader.forEach(k => {
+    row[k] = document.getElementById(`add_${k}`).value;
+  });
+
+  await fetch(API, {
+    method:"POST",
+    body: new URLSearchParams({
+      action:"addPeserta",
+      data: JSON.stringify(row)
+    })
+  });
+
+  closePopup();
+  hideLoading();
+  loadData();
+}
+
+/* ==== DELETE PESERTA ==== */
+async function delPeserta(username) {
+  if(!confirm("Yakin hapus peserta?")) return;
+
+  showLoading();
+
+  await fetch(API, {
+    method: "POST",
+    body: new URLSearchParams({
+      action:"deletePeserta",
+      username
+    })
+  });
+
+  hideLoading();
+  loadData();
+}
+
+/* ==== DELETE ANNOUNCEMENT ==== */
+async function delAnn(id) {
+  if(!confirm("Hapus pengumuman?")) return;
+
+  showLoading();
+
+  await fetch(API, {
+    method: "POST",
+    body: new URLSearchParams({
+      action:"deleteAnnouncement",
+      id
+    })
+  });
+
+  hideLoading();
+  loadData();
+}
+
+function closePopup() {
+  document.getElementById("popupEdit").style.display = "none";
+  document.getElementById("popupAdd").style.display = "none";
+}
+
+loadData();
+</script>
+
+</body>
+</html>

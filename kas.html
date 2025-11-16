@@ -120,15 +120,19 @@
       const utangBody = document.getElementById('tabelUtang');
       utangBody.innerHTML = '';
       data.statistik.forEach(row=>{
-        const status = row.utang<=0 ? `<span class="status-lunas">Lunas</span>` : `<span class="status-belum">Belum</span>`;
-        utangBody.innerHTML += `<tr>
-          <td>${row.nama}</td>
-          <td>${rupiah(row.totalBayar)}</td>
-          <td>${rupiah(data.mingguBerjalan * data.iuranMingguan)}</td>
-          <td>${rupiah(row.utang)}</td>
-          <td>${status}</td>
-        </tr>`;
-      });
+  const status = row.utang <= 0 
+    ? `<span class="status-lunas">Lunas</span>` 
+    : `<span class="status-belum">Belum</span>`;
+
+  utangBody.innerHTML += `
+    <tr>
+      <td>${row.nama}</td>
+      <td>${rupiah(row.totalBayar)}</td>
+      <td>${rupiah(row.totalWajib)}</td>
+      <td>${rupiah(row.utang)}</td>
+      <td>${status}</td>
+    </tr>`;
+});
     } catch(err) { alert("⚠️ Gagal memuat data: "+err); } 
     finally { showLoading(false); }
   }
@@ -157,6 +161,7 @@
 </body>
 
 </html>
+
 
 
 

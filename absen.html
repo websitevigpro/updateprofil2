@@ -172,11 +172,11 @@
 </head>
 <body>
   <div class="card">
-    <h2>Absensi Agenda</h2>
+    <h2>Absensi Anggota</h2>
     <div id="datetime"></div>
 
     <div class="input-group">
-      <input type="password" id="password" placeholder="Masukkan Password">
+      <input type="password" id="password" placeholder="Masukkan NIS">
       <i class="fa fa-lock"></i>
     </div>
 
@@ -245,4 +245,253 @@
     }
   </script>
 </body>
+
+</html><!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- penting untuk mobile -->
+  <title>Absensi Online</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* ===== Background Animasi ===== */
+    body {
+      font-family: "Poppins", sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(-45deg, #74ebd5, #9face6, #a1c4fd, #c2e9fb);
+      background-size: 400% 400%;
+      animation: gradientBG 12s ease infinite;
+    }
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* ===== Card ===== */
+    .card {
+      backdrop-filter: blur(15px);
+      background: rgba(255, 255, 255, 0.15);
+      padding: 30px 25px;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+      text-align: center;
+      width: 90%;
+      max-width: 380px;
+      color: #fff;
+      animation: fadeIn 0.8s ease;
+      box-sizing: border-box;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== Judul & Waktu ===== */
+    h2 {
+      margin-bottom: 10px;
+      font-weight: 600;
+      font-size: 22px;
+    }
+    #datetime {
+      font-size: 14px;
+      margin-bottom: 25px;
+      opacity: 0.9;
+      word-wrap: break-word;
+    }
+
+    /* ===== Input Group ===== */
+    .input-group {
+      position: relative;
+      margin: 18px 0;
+    }
+    .input-group input {
+      padding: 14px 45px 14px 15px;
+      width: 100%;
+      border-radius: 12px;
+      border: none;
+      outline: none;
+      font-size: 16px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #333;
+      box-sizing: border-box;
+    }
+    .input-group input::placeholder {
+      color: #777;
+    }
+    .input-group i {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #555;
+      font-size: 16px;
+    }
+
+    /* ===== Tombol ===== */
+    button {
+      padding: 15px;
+      width: 100%;
+      cursor: pointer;
+      background: linear-gradient(45deg, #2e86de, #3498db);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    button i {
+      margin-right: 6px;
+    }
+    button:hover {
+      transform: scale(1.04);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+    }
+
+    /* ===== Notifikasi Toast ===== */
+    .toast {
+      margin-top: 20px;
+      padding: 12px 15px;
+      border-radius: 10px;
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(15px);
+      transition: all 0.4s ease;
+      font-weight: 500;
+      font-size: 14px;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .toast.success {
+      background: rgba(39, 174, 96, 0.9);
+      color: #fff;
+    }
+    .toast.error {
+      background: rgba(192, 57, 43, 0.9);
+      color: #fff;
+    }
+
+    /* ===== Overlay Loading ===== */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      visibility: hidden;
+      z-index: 100;
+    }
+    .spinner {
+      border: 6px solid rgba(255,255,255,0.3);
+      border-top: 6px solid #fff;
+      border-radius: 50%;
+      width: 65px;
+      height: 65px;
+      animation: spin 1s linear infinite;
+    }
+    .loading-text {
+      margin-top: 15px;
+      font-size: 15px;
+      color: #fff;
+      letter-spacing: 0.5px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* ===== Responsif tambahan ===== */
+    @media (max-width: 400px) {
+      h2 { font-size: 20px; }
+      #datetime { font-size: 13px; }
+      button { font-size: 16px; padding: 14px; }
+      .input-group input { font-size: 15px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Absensi Anggota</h2>
+    <div id="datetime"></div>
+
+    <div class="input-group">
+      <input type="password" id="password" placeholder="Masukkan NIS">
+      <i class="fa fa-lock"></i>
+    </div>
+
+    <button onclick="kirimAbsen()">
+      <i class="fa fa-check-circle"></i> Absen Sekarang
+    </button>
+
+    <div id="pesan" class="toast"></div>
+  </div>
+
+  <!-- Overlay Loading -->
+  <div class="overlay" id="overlay">
+    <div class="spinner"></div>
+    <div class="loading-text">Sedang memproses...</div>
+  </div>
+
+  <script>
+    // ===== Tanggal & Jam Realtime =====
+    function updateDateTime() {
+      const now = new Date();
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      document.getElementById("datetime").innerText =
+        now.toLocaleDateString("id-ID", options) + " | " + now.toLocaleTimeString("id-ID");
+    }
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+
+    // ===== Kirim Absen =====
+    async function kirimAbsen() {
+      const pass = document.getElementById("password").value;
+      const overlay = document.getElementById("overlay");
+
+      if(!pass) {
+        showToast("⚠️ Password tidak boleh kosong!", "error");
+        return;
+      }
+
+      overlay.style.visibility = "visible"; // tampilkan loading
+
+      try {
+        const response = await fetch("https://script.google.com/macros/s/AKfycbwLLhjbi8yaGx2vKXZouSyKlBf6zCz2j-BJwl_KvtDYokYHjwzNhWdinzGXoh9j8jgrww/exec", {
+          method: "POST",
+          body: new URLSearchParams({password: pass})
+        });
+
+        const res = await response.json();
+        overlay.style.visibility = "hidden";
+
+        if(res.status === "success") {
+          showToast(res.message, "success");
+        } else {
+          showToast(res.message, "error");
+        }
+
+      } catch (err) {
+        overlay.style.visibility = "hidden";
+        showToast("🚨 Gagal terhubung ke server!", "error");
+      }
+    }
+
+    // ===== Fungsi Toast =====
+    function showToast(message, type) {
+      const pesan = document.getElementById("pesan");
+      pesan.className = `toast ${type} show`;
+      pesan.innerText = message;
+    }
+  </script>
+</body>
+
 </html>
